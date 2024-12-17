@@ -1,17 +1,26 @@
 import { useState } from "react";
 import ModalInput from "./ModalInput";
 
-const AddOrderModal = ({ showModal, func }) => {
+const AddOrderModal = ({ showModal, func, addOrder }) => {
   // Use state to track the index
   const [index, setIndex] = useState(1);
-  const [clientName, setClientName] = useState("");
-  const [clientPhoneNumber, setClientPhoneNumber] = useState("");
+  const [customerName, setcustomerName] = useState("");
+  const [customerPhoneNumber, setcustomerPhoneNumber] = useState("");
   const [orderTime, setOrderTime] = useState();
   const [orderDate, setOrderDate] = useState();
+  const addNewOrder = () => {
+    // Extract hour from orderTime to calculate 'po'
+    const po = parseInt(orderTime.split(":")[0], 10);
+    console.log(orderTime.split(":")[0], 10);
 
-  const handleClientName = (e) => {
-    console.log(clientName);
-    setClientName(e.target.value);
+    const newOrder = {
+      id: Math.random(300),
+      customerName: customerName,
+      customerNumber: customerPhoneNumber,
+      orderTime: orderTime,
+      po: po,
+    };
+    addOrder(newOrder);
   };
 
   const increaseOrderField = () => {
@@ -23,7 +32,6 @@ const AddOrderModal = ({ showModal, func }) => {
       setIndex(index - 1); // Decrement index by 1
     }
   };
-  console.log(clientName);
 
   return (
     <form action="" method="post">
@@ -33,11 +41,11 @@ const AddOrderModal = ({ showModal, func }) => {
   ${showModal ? "opacity-100 scale-100" : "opacity-100 scale-0"}`}
       >
         <ModalInput
-          name={"nomClient"}
-          text={"Nom De Client"}
+          name={"nomcustomer"}
+          text={"Nom De customer"}
           type={"text"}
           onChange={(e) => {
-            setClientName(e.target.value);
+            setcustomerName(e.target.value);
           }}
         />
         <ModalInput
@@ -45,7 +53,7 @@ const AddOrderModal = ({ showModal, func }) => {
           text={"Numero De Telephone"}
           type={"text"}
           onChange={(e) => {
-            setClientPhoneNumber(e.target.value);
+            setcustomerPhoneNumber(e.target.value);
           }}
         />
 
@@ -140,9 +148,11 @@ const AddOrderModal = ({ showModal, func }) => {
         </div>
         <div
           className="rounded-3xl bg-green-400 border-green-200 border-2 p-4 hover:bg-green-200 duration-300 cursor-pointer"
-          onClick={func}
+          onClick={() => {
+            func(), addNewOrder();
+          }}
         >
-          Ajouter commande {}
+          ajouter
         </div>
       </div>
     </form>

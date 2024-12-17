@@ -11,16 +11,16 @@ import Order from "../components/Orders";
 
 const HomeView = () => {
   const [isAddModalShown, setIsAddModalShown] = useState(false);
-  const handleAddModal = () => {
-    setIsAddModalShown(!isAddModalShown);
+  const [customer, setCustomer] = useState("");
+  const addOrder = (order) => {
+    setOrders((prevOrders) => [...prevOrders, { ...order }]);
   };
-
-  const orders = [
+  const [orders, setOrders] = useState([
     {
       id: "1",
       customerName: "Mme Sousou",
       orderTime: "10:35",
-      customerNumber: "28256698",
+      customerPhoneNumber: "28256698",
       po: "10",
     },
     {
@@ -44,9 +44,9 @@ const HomeView = () => {
       customerNumber: "28256698",
       po: "12",
     },
-  ];
-  const addOrder = (order) => {
-    orders.push(order);
+  ]);
+  const handleAddModal = (order) => {
+    setIsAddModalShown(!isAddModalShown);
   };
 
   return (
@@ -56,7 +56,7 @@ const HomeView = () => {
       <div className="pt-28 w-full h-[10rem] flex flex-row items-center justify-between px-20">
         <div className="flex flex-row items-center space-x-5">
           <div className="rounded-3xl border-gray-200 border-2 p-4 hover:bg-slate-200 duration-300">
-            Aujourd'hui
+            Aujourd'hui {customer}
           </div>
           <div className="rounded-full hover:bg-slate-200 p-2 items-center justify-center flex duration-300">
             <IonIcon
@@ -114,7 +114,12 @@ const HomeView = () => {
           </div>
         ))}
       </div>
-      <AddOrderModal showModal={isAddModalShown} func={handleAddModal} />
+
+      <AddOrderModal
+        showModal={isAddModalShown}
+        func={handleAddModal}
+        addOrder={addOrder}
+      />
     </div>
   );
 };
