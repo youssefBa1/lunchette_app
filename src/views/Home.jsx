@@ -8,13 +8,15 @@ import {
   addCircleOutline,
 } from "ionicons/icons";
 import Order from "../components/Orders";
+import OrderModal from "../components/AgendaComponents/OrderModal";
 
 const HomeView = () => {
   const [isAddModalShown, setIsAddModalShown] = useState(false);
-  const [customer, setCustomer] = useState("");
+
   const addOrder = (order) => {
     setOrders((prevOrders) => [...prevOrders, { ...order }]);
   };
+  const [isOrderModalShown, setIsOrderModalShown] = useState(false);
   const [orders, setOrders] = useState([
     {
       id: "1",
@@ -48,15 +50,19 @@ const HomeView = () => {
   const handleAddModal = (order) => {
     setIsAddModalShown(!isAddModalShown);
   };
+  const handleOrderModal = () => {
+    setIsOrderModalShown(!isOrderModalShown);
+  };
+  console.log(isOrderModalShown);
 
   return (
     <div className="h-auto max-w-screen relative ">
       <NavBar></NavBar>
 
-      <div className="pt-28 w-full h-[10rem] flex flex-row items-center justify-between px-20">
+      <div className="pt-28 w-full h-[10rem] flex flex-row items-center justify-between px-20 sticky">
         <div className="flex flex-row items-center space-x-5">
           <div className="rounded-3xl border-gray-200 border-2 p-4 hover:bg-slate-200 duration-300">
-            Aujourd'hui {customer}
+            Aujourd'hui
           </div>
           <div className="rounded-full hover:bg-slate-200 p-2 items-center justify-center flex duration-300">
             <IonIcon
@@ -107,7 +113,7 @@ const HomeView = () => {
               {orders
                 .filter((order) => parseInt(order.po) === 8 + i)
                 .map((order) => (
-                  <Order key={order.id} order={order} />
+                  <Order key={order.id} order={order} func={handleOrderModal} />
                 ))}
             </div>
             <hr />
@@ -120,6 +126,7 @@ const HomeView = () => {
         func={handleAddModal}
         addOrder={addOrder}
       />
+      <OrderModal show={isOrderModalShown} />
     </div>
   );
 };
