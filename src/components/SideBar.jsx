@@ -34,7 +34,7 @@ const SideBar = ({ isCollapsed }) => {
               icon={calendarOutline}
               style={{ fontSize: "30px" }}
             ></IonIcon>{" "}
-            <a href="/agenda" className="text-2xl font-md">
+            <a href="/orders" className="text-2xl font-md">
               Agende
             </a>
           </div>
