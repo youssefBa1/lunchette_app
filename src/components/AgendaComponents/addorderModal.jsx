@@ -21,6 +21,8 @@ const AddOrderModal = ({
   const [details, setDetails] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerms, setSearchTerms] = useState(Array(10).fill("")); // Array to store search terms for each article
+  const [filteredProducts, setFilteredProducts] = useState(Array(10).fill([])); // Array to store filtered products for each article
 
   // Track window width for responsive design
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -158,6 +160,29 @@ const AddOrderModal = ({
     setArticles(newArticles);
   };
 
+  const handleSearch = (index, searchTerm) => {
+    const newSearchTerms = [...searchTerms];
+    newSearchTerms[index] = searchTerm;
+    setSearchTerms(newSearchTerms);
+
+    const filtered = products.filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const newFilteredProducts = [...filteredProducts];
+    newFilteredProducts[index] = filtered;
+    setFilteredProducts(newFilteredProducts);
+  };
+
+  const selectProduct = (index, product) => {
+    updateArticle(index, "product_id", product._id);
+    const newSearchTerms = [...searchTerms];
+    newSearchTerms[index] = product.name;
+    setSearchTerms(newSearchTerms);
+    const newFilteredProducts = [...filteredProducts];
+    newFilteredProducts[index] = [];
+    setFilteredProducts(newFilteredProducts);
+  };
+
   if (loading) return null;
 
   // Desktop modal container styles
@@ -246,18 +271,29 @@ const AddOrderModal = ({
             key={i}
           >
             <div className={`${isMobile ? "w-full" : "w-3/5 ml-8"}`}>
-              <select
-                value={item.product_id}
-                onChange={(e) => updateArticle(i, "product_id", e.target.value)}
-                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-rose-300 peer"
-              >
-                <option value="">Sélectionner un produit</option>
-                {products.map((product) => (
-                  <option key={product._id} value={product._id}>
-                    {product.name} - {product.price}€
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchTerms[i] || ""}
+                  onChange={(e) => handleSearch(i, e.target.value)}
+                  placeholder="Rechercher un produit..."
+                  className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-rose-300 peer"
+                />
+                {filteredProducts[i]?.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {filteredProducts[i].map((product) => (
+                      <div
+                        key={product._id}
+                        onClick={() => selectProduct(i, product)}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                      >
+                        <span>{product.name}</span>
+                        <span className="text-gray-500">{product.price}€</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className={`${isMobile ? "w-full" : "w-1/5"}`}>
               <ModalInput
