@@ -258,6 +258,36 @@ class OrderController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  // Update order status only
+  async updateOrderStatus(req, res) {
+    try {
+      const { status } = req.body;
+
+      // Validate status value
+      if (!status || !["notready", "ready", "payed"].includes(status)) {
+        return res.status(400).json({
+          message: "Invalid status value",
+          details: "Status must be one of: notready, ready, payed",
+        });
+      }
+
+      const order = await Order.findById(req.params.id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Only update the status field
+      order.status = status;
+      await order.save();
+
+      // Return the updated order
+      await order.populate("orderContent.product_id", "name price");
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
 }
 
 module.exports = new OrderController();

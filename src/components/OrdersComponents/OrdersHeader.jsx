@@ -34,10 +34,10 @@ const OrdersHeader = ({
   };
 
   return (
-    <div className="pt-28 w-full h-[10rem] flex flex-row items-center justify-between px-20">
-      <div className="flex flex-row items-center space-x-5">
+    <div className="pt-20 sm:pt-24 md:pt-28 w-full flex flex-col md:flex-row items-center justify-between px-4 sm:px-8 md:px-12 lg:px-20 pb-4 md:pb-6 space-y-4 md:space-y-0">
+      <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 md:gap-5 w-full md:w-auto">
         <div
-          className="rounded-3xl border-gray-200 border-2 p-4 hover:bg-slate-200 duration-300 cursor-pointer"
+          className="rounded-3xl border-gray-200 border-2 px-3 py-2 md:p-4 hover:bg-slate-200 duration-300 cursor-pointer text-sm md:text-base"
           onClick={goToToday}
         >
           Aujourd'hui
@@ -48,8 +48,9 @@ const OrdersHeader = ({
         >
           <IonIcon
             icon={chevronBackOutline}
-            style={{ fontSize: "25px" }}
-          ></IonIcon>
+            style={{ fontSize: "20px" }}
+            className="md:text-2xl"
+          />
         </div>
         <div
           className="rounded-full hover:bg-slate-200 p-2 items-center justify-center flex duration-300 cursor-pointer"
@@ -57,28 +58,32 @@ const OrdersHeader = ({
         >
           <IonIcon
             icon={chevronForwardOutline}
-            style={{ fontSize: "25px" }}
-          ></IonIcon>
+            style={{ fontSize: "20px" }}
+            className="md:text-2xl"
+          />
         </div>
-        <div className="font-medium text-xl">
+        <div className="font-medium text-base md:text-xl">
           {month} {year}
         </div>
-        <div className="font-medium text-xl text-green-200">
+        <div className="font-medium text-sm md:text-xl text-green-200">
           Nbre de commande : {orders.length}
         </div>
       </div>
-      <IonIcon
-        onClick={handleAddModal}
-        className="!blur-none ml-[38rem] hover:rotate-45 rounded-full duration-300 opacity-100"
-        icon={addCircleOutline}
-        style={{ fontSize: "45px", color: "#fca5a5" }}
-      ></IonIcon>
-      <input
-        type="date"
-        value={selectedDate}
-        onChange={(e) => setSelectedDate(e.target.value)}
-        className="border-2 rounded-3xl px-4 py-3 font-medium text-lg hover:bg-200 duration-300"
-      />
+
+      <div className="flex items-center justify-center w-full md:w-auto space-x-4">
+        <IonIcon
+          onClick={() => handleAddModal(null)}
+          className="!blur-none hover:rotate-45 rounded-full duration-300 opacity-100 cursor-pointer"
+          icon={addCircleOutline}
+          style={{ fontSize: "35px", color: "#fca5a5" }}
+        />
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="border-2 rounded-3xl px-3 py-2 md:px-4 md:py-3 font-medium text-sm md:text-lg hover:bg-200 duration-300"
+        />
+      </div>
     </div>
   );
 };

@@ -14,7 +14,7 @@ const productSchema = Joi.object({
     "number.min": "Price cannot be negative",
   }),
 
-  imageUrl: Joi.string().uri().allow("").optional().messages({
+  imageUrl: Joi.string().uri().allow("").optional().default("").messages({
     "string.uri": "Please provide a valid URL for the image",
   }),
 
@@ -32,6 +32,8 @@ const productSchema = Joi.object({
     }),
 
   isAvailable: Joi.boolean().default(true),
+
+  description: Joi.string().allow("").default("").optional(),
 });
 
 const validateProduct = (data) => {

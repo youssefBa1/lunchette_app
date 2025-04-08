@@ -24,11 +24,11 @@ const OrdersTableView = ({
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":
+      case "notready":
         return "bg-red-100 text-red-800";
       case "ready":
         return "bg-blue-100 text-blue-800";
-      case "completed":
+      case "payed":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -37,19 +37,30 @@ const OrdersTableView = ({
 
   const getStatusText = (status) => {
     switch (status) {
-      case "pending":
+      case "notready":
         return "En attente";
       case "ready":
         return "Prêt";
-      case "completed":
+      case "payed":
         return "Payé";
       default:
         return status;
     }
   };
 
+  const handleStatusChange = (orderId, newStatus, currentStatus) => {
+    const statusText = getStatusText(newStatus);
+    const confirmed = window.confirm(
+      `Voulez-vous changer le statut en "${statusText}" ?`
+    );
+
+    if (confirmed) {
+      updateOrderStatus(orderId, newStatus);
+    }
+  };
+
   return (
-    <div className="p-8 ">
+    <div className="p-8 relative">
       <div className="w-full flex items-center justify-center flex-col">
         <div className="text-gray-500 text-xs mb-3 font-bold">{dayName}</div>
         <div className="text-gray-500 text-lg font-bold">{dayNumber}</div>
@@ -71,6 +82,9 @@ const OrdersTableView = ({
                 Contenu
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Statut
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -80,7 +94,7 @@ const OrdersTableView = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50">
+              <tr key={order._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {order.customerName}
@@ -92,30 +106,43 @@ const OrdersTableView = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{order.orderTime}</div>
+                  <div className="text-sm text-gray-500">
+                    {order.pickupTime}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-500">
-                    {order.orderContent.map((item, index) => (
-                      <div key={index}>
-                        {item.quantity}x {item.article}
-                      </div>
-                    ))}
+                    {order.orderContent &&
+                      order.orderContent.map((item, index) => (
+                        <div key={index}>
+                          {item.quantity}x{" "}
+                          {item.product_id && item.product_id.name}
+                        </div>
+                      ))}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {order.totalPrice?.toFixed(2)}€
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
                     value={order.status}
                     onChange={(e) =>
-                      updateOrderStatus(order.id, e.target.value)
+                      handleStatusChange(
+                        order._id,
+                        e.target.value,
+                        order.status
+                      )
                     }
                     className={`text-sm px-2 py-1 rounded-full ${getStatusColor(
                       order.status
                     )}`}
                   >
-                    <option value="pending">En attente</option>
+                    <option value="notready">En attente</option>
                     <option value="ready">Prêt</option>
-                    <option value="completed">Payé</option>
+                    <option value="payed">Payé</option>
                   </select>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -131,7 +158,7 @@ const OrdersTableView = ({
                     </button>
                     <button
                       className="text-rose-600 hover:text-rose-900"
-                      onClick={() => deleteOrder(order.id)}
+                      onClick={() => deleteOrder(order._id)}
                     >
                       <IonIcon
                         icon={trashOutline}

@@ -17,6 +17,9 @@ router.get("/:id", orderController.getOrder);
 // Update an order
 router.put("/:id", orderController.updateOrder);
 
+// Update order status only
+router.patch("/:id/status", orderController.updateOrderStatus);
+
 // Delete an order
 router.delete("/:id", orderController.deleteOrder);
 
