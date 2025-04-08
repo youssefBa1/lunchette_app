@@ -61,116 +61,138 @@ const OrdersTableView = ({
 
   return (
     <div className="p-8 relative">
-      <div className="w-full flex items-center justify-center flex-col">
+      <div className="w-full flex items-center justify-center flex-col mb-6">
         <div className="text-gray-500 text-xs mb-3 font-bold">{dayName}</div>
         <div className="text-gray-500 text-lg font-bold">{dayNumber}</div>
       </div>
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Client
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Téléphone
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Heure
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contenu
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Statut
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map((order) => (
-              <tr key={order._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {order.customerName}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">
-                    {order.customerPhoneNumber || order.customerNumber}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">
-                    {order.pickupTime}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-500">
-                    {order.orderContent &&
-                      order.orderContent.map((item, index) => (
-                        <div key={index}>
-                          {item.quantity}x{" "}
-                          {item.product_id && item.product_id.name}
-                        </div>
-                      ))}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {order.totalPrice?.toFixed(2)}€
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <select
-                    value={order.status}
-                    onChange={(e) =>
-                      handleStatusChange(
-                        order._id,
-                        e.target.value,
-                        order.status
-                      )
-                    }
-                    className={`text-sm px-2 py-1 rounded-full ${getStatusColor(
-                      order.status
-                    )}`}
-                  >
-                    <option value="notready">En attente</option>
-                    <option value="ready">Prêt</option>
-                    <option value="payed">Payé</option>
-                  </select>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-4">
-                    <button
-                      className="text-rose-600 hover:text-rose-900"
-                      onClick={() => handleAddModal(order)}
-                    >
-                      <IonIcon
-                        icon={createOutline}
-                        style={{ fontSize: "20px" }}
-                      />
-                    </button>
-                    <button
-                      className="text-rose-600 hover:text-rose-900"
-                      onClick={() => deleteOrder(order._id)}
-                    >
-                      <IonIcon
-                        icon={trashOutline}
-                        style={{ fontSize: "20px" }}
-                      />
-                    </button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Client
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Phone
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Time
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Content
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Total Price
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleAddModal(order)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {order.customerName}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {order.customerPhoneNumber}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {order.pickupTime}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {order.orderContent &&
+                        order.orderContent.map((item, index) => (
+                          <div key={index}>
+                            {item.quantity}x{" "}
+                            {item.product_id && item.product_id.name}
+                          </div>
+                        ))}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {order.totalPrice?.toFixed(2)}€
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      value={order.status}
+                      onChange={(e) =>
+                        handleStatusChange(
+                          order._id,
+                          e.target.value,
+                          order.status
+                        )
+                      }
+                      className={`text-sm px-2 py-1 rounded-full ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      <option value="notready">En attente</option>
+                      <option value="ready">Prêt</option>
+                      <option value="payed">Payé</option>
+                    </select>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-4">
+                      <button
+                        className="text-rose-600 hover:text-rose-900"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteOrder(order._id);
+                        }}
+                      >
+                        <IonIcon
+                          icon={trashOutline}
+                          style={{ fontSize: "20px" }}
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,12 @@
 import { IonIcon } from "@ionic/react";
 import { useState, useEffect } from "react";
 import AddOrderModal from "../AgendaComponents/addorderModal";
-import { calendarOutline, listOutline } from "ionicons/icons";
+import { calendarOutline, listOutline, filterOutline } from "ionicons/icons";
 import Order from "../Orders";
 import OrderModal from "../AgendaComponents/OrderModal";
 import OrdersHeader from "./OrdersHeader";
 import OrdersTableView from "./OrdersTableView";
+import FilterPanel from "./FilterPanel";
 import { orderService } from "../../services/orderService";
 
 const OrdersAgendaView = () => {
@@ -20,6 +21,14 @@ const OrdersAgendaView = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedStatuses, setSelectedStatuses] = useState([
+    "notready",
+    "ready",
+    "payed",
+  ]);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState({ start: "08:00", end: "23:59" });
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
 
   const dayNames = ["DIM.", "LUN.", "MAR.", "MER.", "JEU.", "VEN.", "SAM."];
   const months = [
@@ -138,6 +147,46 @@ const OrdersAgendaView = () => {
 
   const [isOrderModalShown, setIsOrderModalShown] = useState(false);
 
+  // Handle status filter changes
+  const handleStatusChange = (status) => {
+    setSelectedStatuses((prev) => {
+      if (prev.includes(status)) {
+        // Remove status if already selected
+        return prev.filter((s) => s !== status);
+      } else {
+        // Add status if not selected
+        return [...prev, status];
+      }
+    });
+  };
+
+  // Filter orders based on all filters
+  const filteredOrders = orders.filter((order) => {
+    // Status filter
+    if (!selectedStatuses.includes(order.status)) {
+      return false;
+    }
+
+    // Time range filter
+    const orderTime = order.pickupTime;
+    if (timeRange.start && timeRange.end) {
+      if (orderTime < timeRange.start || orderTime > timeRange.end) {
+        return false;
+      }
+    }
+
+    // Price range filter
+    const price = parseFloat(order.totalPrice);
+    if (priceRange.min && price < parseFloat(priceRange.min)) {
+      return false;
+    }
+    if (priceRange.max && price > parseFloat(priceRange.max)) {
+      return false;
+    }
+
+    return true;
+  });
+
   if (loading)
     return (
       <div className="flex justify-center items-center h-screen">
@@ -152,126 +201,202 @@ const OrdersAgendaView = () => {
     );
 
   return (
-    <div className="h-auto max-w-screen relative">
+    <div className="h-auto max-w-screen relative bg-gray-50">
       <OrdersHeader
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        orders={orders}
+        orders={filteredOrders}
         handleAddModal={handleAddModal}
         dayNames={dayNames}
         months={months}
       />
-      <div className="w-full mt-2 sm:mt-3 md:mt-5 flex items-center justify-center flex-col">
-        <div className="flex bg-rose-50 rounded-full p-1 shadow-md w-[80px] sm:w-[90px] md:w-[100px] justify-between items-center mb-2 sm:mb-3 md:mb-4">
-          <button
-            onClick={() => setViewMode("agenda")}
-            className={`p-1 sm:p-2 rounded-full transition-colors flex items-center justify-center ${
+
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-center mb-4">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex bg-rose-50 rounded-full p-1 shadow-md w-[80px] sm:w-[90px] md:w-[100px] justify-between items-center">
+              <button
+                onClick={() => setViewMode("agenda")}
+                className={`p-1 sm:p-2 rounded-full transition-colors flex items-center justify-center ${
+                  viewMode === "agenda"
+                    ? "bg-rose-200 text-rose-600"
+                    : "hover:bg-rose-100"
+                }`}
+              >
+                <IonIcon
+                  icon={calendarOutline}
+                  style={{ fontSize: "18px" }}
+                  className="md:text-xl"
+                />
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-1 sm:p-2 rounded-full transition-colors flex items-center justify-center ${
+                  viewMode === "table"
+                    ? "bg-rose-200 text-rose-600"
+                    : "hover:bg-rose-100"
+                }`}
+              >
+                <IonIcon
+                  icon={listOutline}
+                  style={{ fontSize: "18px" }}
+                  className="md:text-xl"
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsFilterPanelOpen(true)}
+              className={`p-2 rounded-full transition-colors flex items-center justify-center ${
+                isFilterPanelOpen ||
+                selectedStatuses.length < 3 ||
+                timeRange.start !== "08:00" ||
+                timeRange.end !== "23:59" ||
+                priceRange.min ||
+                priceRange.max
+                  ? "bg-rose-200 text-rose-600"
+                  : "bg-rose-50 hover:bg-rose-100"
+              }`}
+            >
+              <IonIcon
+                icon={filterOutline}
+                style={{ fontSize: "18px" }}
+                className="md:text-xl"
+              />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative w-full">
+          <div
+            className={`absolute w-full transition-all duration-300 transform ${
               viewMode === "agenda"
-                ? "bg-rose-200 text-rose-600"
-                : "hover:bg-rose-100"
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-full"
             }`}
+            style={{ pointerEvents: viewMode === "agenda" ? "auto" : "none" }}
           >
-            <IonIcon
-              icon={calendarOutline}
-              style={{ fontSize: "18px" }}
-              className="md:text-xl"
-            />
-          </button>
-          <button
-            onClick={() => setViewMode("table")}
-            className={`p-1 sm:p-2 rounded-full transition-colors flex items-center justify-center ${
-              viewMode === "table"
-                ? "bg-rose-200 text-rose-600"
-                : "hover:bg-rose-100"
-            }`}
-          >
-            <IonIcon
-              icon={listOutline}
-              style={{ fontSize: "18px" }}
-              className="md:text-xl"
-            />
-          </button>
-        </div>
-      </div>
-
-      <div className="relative w-full">
-        <div
-          className={`absolute w-full transition-all duration-300 transform ${
-            viewMode === "agenda"
-              ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-full"
-          }`}
-          style={{ pointerEvents: viewMode === "agenda" ? "auto" : "none" }}
-        >
-          <div className="w-full mt-2 sm:mt-3 md:mt-5 flex items-center justify-center flex-col">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2 md:mb-3 font-bold">
-              {dayNames[new Date(selectedDate).getDay()]}
-            </div>
-            <div className="text-gray-500 text-base sm:text-lg font-bold">
-              {new Date(selectedDate).getDate()}
-            </div>
-          </div>
-          <div className="h-auto w-1 border-r-2 absolute ml-[3rem] sm:ml-[4rem] md:ml-[5rem]"></div>
-          <div className="min-w-full overflow-x-auto flex flex-col ml-4 sm:ml-6 md:ml-10">
-            {Array.from({ length: 16 }, (_, i) => {
-              const hour = 8 + i;
-              const hourOrders = orders
-                .filter((order) => {
-                  const orderHour = parseInt(order.pickupTime.split(":")[0]);
-                  return orderHour === hour;
-                })
-                .sort((a, b) => {
-                  const timeA = a.pickupTime.split(":").map(Number);
-                  const timeB = b.pickupTime.split(":").map(Number);
-                  return timeA[1] - timeB[1];
-                });
-
-              return (
-                <div key={i}>
-                  <hr />
-                  <div className="h-20 sm:h-24 md:h-24 w-full md:w-[96vh] flex flex-row">
-                    <span className="text-sm sm:text-base md:text-lg min-w-[2rem] sm:min-w-[3rem] md:min-w-[4rem]">{`${hour}h`}</span>
-                    <div className="flex flex-row flex-wrap gap-2 ml-2">
-                      {hourOrders.map((order) => (
-                        <Order
-                          key={order._id}
-                          order={{
-                            ...order,
-                            orderTime: order.pickupTime,
-                            customerNumber: order.customerPhoneNumber,
-                          }}
-                          func={(e) => handleOrderModal(order, e)}
-                        />
-                      ))}
-                    </div>
+            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <div className="text-lg font-semibold text-gray-800">
+                    {dayNames[new Date(selectedDate).getDay()]}
                   </div>
-                  <hr />
+                  <div className="text-2xl font-bold text-gray-900">
+                    {new Date(selectedDate).getDate()}
+                  </div>
                 </div>
-              );
-            })}
+                <div className="text-sm text-gray-500">
+                  {
+                    filteredOrders.filter(
+                      (order) => order.status === "notready"
+                    ).length
+                  }{" "}
+                  commandes en attente
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 16 }, (_, i) => {
+                  const hour = 8 + i;
+                  const hourOrders = filteredOrders
+                    .filter((order) => {
+                      const orderHour = parseInt(
+                        order.pickupTime.split(":")[0]
+                      );
+                      return orderHour === hour;
+                    })
+                    .sort((a, b) => {
+                      const timeA = a.pickupTime.split(":").map(Number);
+                      const timeB = b.pickupTime.split(":").map(Number);
+                      return timeA[1] - timeB[1];
+                    });
+
+                  if (hourOrders.length === 0) return null;
+
+                  return (
+                    <div key={i} className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm font-medium text-gray-500 mb-3">
+                        {`${hour}:00`}
+                      </div>
+                      <div className="space-y-2">
+                        {hourOrders.map((order) => (
+                          <div
+                            key={order._id}
+                            onClick={(e) => handleOrderModal(order, e)}
+                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                              order.status === "notready"
+                                ? "bg-red-100 hover:bg-red-200"
+                                : order.status === "ready"
+                                ? "bg-blue-100 hover:bg-blue-200"
+                                : "bg-green-100 hover:bg-green-200"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="font-medium text-gray-900">
+                                {order.customerName}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {order.pickupTime}
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {order.customerPhoneNumber}
+                            </div>
+                            <div className="mt-2 text-sm">
+                              {order.orderContent?.map((item, index) => (
+                                <div key={index} className="text-gray-700">
+                                  {item.quantity}x {item.product_id.name}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-2 text-right font-medium text-gray-900">
+                              {order.totalPrice}€
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`absolute w-full transition-all duration-300 transform ${
+              viewMode === "table"
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-full"
+            }`}
+            style={{ pointerEvents: viewMode === "table" ? "auto" : "none" }}
+          >
+            <OrdersTableView
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              orders={filteredOrders}
+              setOrders={setOrders}
+              handleAddModal={handleAddModal}
+              dayNames={dayNames}
+              months={months}
+              updateOrderStatus={updateOrderStatus}
+            />
           </div>
         </div>
-
-        <div
-          className={`absolute w-full transition-all duration-300 transform ${
-            viewMode === "table"
-              ? "opacity-100 translate-x-0"
-              : "opacity-0 -translate-x-full"
-          }`}
-          style={{ pointerEvents: viewMode === "table" ? "auto" : "none" }}
-        >
-          <OrdersTableView
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            orders={orders}
-            setOrders={setOrders}
-            handleAddModal={handleAddModal}
-            dayNames={dayNames}
-            months={months}
-            updateOrderStatus={updateOrderStatus}
-          />
-        </div>
       </div>
+
+      {isFilterPanelOpen && (
+        <FilterPanel
+          isOpen={isFilterPanelOpen}
+          onClose={() => setIsFilterPanelOpen(false)}
+          selectedStatuses={selectedStatuses}
+          onStatusChange={handleStatusChange}
+          timeRange={timeRange}
+          onTimeRangeChange={setTimeRange}
+          priceRange={priceRange}
+          onPriceRangeChange={setPriceRange}
+        />
+      )}
 
       <AddOrderModal
         showModal={isAddModalShown}
