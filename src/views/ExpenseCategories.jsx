@@ -24,6 +24,13 @@ const ExpenseCategories = () => {
     name: "",
     description: "",
   });
+  const [isCategoryItemModalOpen, setIsCategoryItemModalOpen] = useState(false);
+  const [editingCategoryItem, setEditingCategoryItem] = useState(null);
+  const [categoryItemFormData, setCategoryItemFormData] = useState({
+    name: "",
+    description: "",
+    category: "",
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -39,6 +46,7 @@ const ExpenseCategories = () => {
         throw new Error("Failed to fetch categories");
       }
       const data = await response.json();
+      console.log("Fetched categories:", data);
       setCategories(data);
     } catch (err) {
       setError(err.message);
@@ -56,6 +64,7 @@ const ExpenseCategories = () => {
         throw new Error("Failed to fetch category items");
       }
       const data = await response.json();
+      console.log("Fetched category items:", data);
       setCategoryItems(data);
     } catch (err) {
       setError(err.message);
@@ -107,19 +116,51 @@ const ExpenseCategories = () => {
     }
   };
 
-  const handleAddCategoryItem = async () => {
-    // TODO: Implement add category item functionality
-    console.log("Add category item");
+  const handleAddCategoryItem = () => {
+    setEditingCategoryItem(null);
+    setCategoryItemFormData({ name: "", description: "", category: "" });
+    setIsCategoryItemModalOpen(true);
   };
 
   const handleEditCategoryItem = async (item) => {
-    // TODO: Implement edit category item functionality
-    console.log("Edit category item", item);
+    console.log("Editing item:", item);
+    setEditingCategoryItem(item);
+    setCategoryItemFormData({
+      name: item.name,
+      description: item.description || "",
+      category: item.category._id,
+    });
+    setIsCategoryItemModalOpen(true);
   };
 
   const handleDeleteCategoryItem = async (itemId) => {
-    // TODO: Implement delete category item functionality
-    console.log("Delete category item", itemId);
+    const confirmDelete = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible."
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/expenses/category-items/${itemId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete item");
+      }
+
+      // Refresh the items list after successful deletion
+      fetchCategoryItems();
+      alert("Élément supprimé avec succès");
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleCategorySubmit = async (e) => {
@@ -132,7 +173,7 @@ const ExpenseCategories = () => {
 
     try {
       const url = editingCategory
-        ? `http://localhost:3000/api/expenses/categories/${editingCategory.id}`
+        ? `http://localhost:3000/api/expenses/categories/${editingCategory._id}`
         : "http://localhost:3000/api/expenses/categories";
 
       const method = editingCategory ? "PUT" : "POST";
@@ -160,6 +201,53 @@ const ExpenseCategories = () => {
     }
   };
 
+  const handleCategoryItemSubmit = async (e) => {
+    e.preventDefault();
+
+    if (categoryItemFormData.name.length < 2) {
+      alert("Le nom doit contenir au moins 2 caractères");
+      return;
+    }
+
+    if (!categoryItemFormData.category) {
+      alert("Veuillez sélectionner une catégorie");
+      return;
+    }
+
+    console.log("Submitting category item:", categoryItemFormData);
+    console.log("Editing item state:", editingCategoryItem);
+
+    try {
+      const url = editingCategoryItem
+        ? `http://localhost:3000/api/expenses/category-items/${editingCategoryItem._id}`
+        : "http://localhost:3000/api/expenses/category-items";
+
+      const method = editingCategoryItem ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(categoryItemFormData),
+      });
+
+      if (response.ok) {
+        setIsCategoryItemModalOpen(false);
+        setEditingCategoryItem(null);
+        setCategoryItemFormData({ name: "", description: "", category: "" });
+        fetchCategoryItems(); // Refresh the items list
+      } else {
+        const error = await response.json();
+        console.error("API error:", error);
+        alert(error.message);
+      }
+    } catch (error) {
+      console.error("Error saving category item:", error);
+      alert("Une erreur est survenue lors de l'enregistrement de l'élément");
+    }
+  };
+
   if (loading) {
     return <div className="p-4 mt-20">Loading...</div>;
   }
@@ -175,7 +263,7 @@ const ExpenseCategories = () => {
   const filteredCategoryItems = categoryItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (!selectedCategory || item.category.id === selectedCategory)
+      (!selectedCategory || item.category._id === selectedCategory)
   );
 
   return (
@@ -256,7 +344,7 @@ const ExpenseCategories = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCategories.map((category) => (
-                  <tr key={category.id}>
+                  <tr key={category._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {category.name}
                     </td>
@@ -269,7 +357,7 @@ const ExpenseCategories = () => {
                         <IonIcon icon={createOutline} />
                       </button>
                       <button
-                        onClick={() => handleDeleteCategory(category.id)}
+                        onClick={() => handleDeleteCategory(category._id)}
                         className="text-rose-600 hover:text-rose-900"
                       >
                         <IonIcon icon={trashOutline} />
@@ -322,7 +410,7 @@ const ExpenseCategories = () => {
               >
                 <option value="">Toutes les catégories</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
+                  <option key={category._id} value={category._id}>
                     {category.name}
                   </option>
                 ))}
@@ -348,7 +436,7 @@ const ExpenseCategories = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCategoryItems.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item._id}>
                     <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {item.category?.name}
@@ -362,7 +450,7 @@ const ExpenseCategories = () => {
                         <IonIcon icon={createOutline} />
                       </button>
                       <button
-                        onClick={() => handleDeleteCategoryItem(item.id)}
+                        onClick={() => handleDeleteCategoryItem(item._id)}
                         className="text-rose-600 hover:text-rose-900"
                       >
                         <IonIcon icon={trashOutline} />
@@ -452,6 +540,113 @@ const ExpenseCategories = () => {
                     className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition-colors"
                   >
                     {editingCategory ? "Modifier" : "Créer"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Item Modal */}
+      {isCategoryItemModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 pt-32">
+          <div
+            className="bg-white rounded-lg w-full max-w-md animate-modal-slide-down"
+            style={{
+              maxHeight: "calc(100vh - 10rem)",
+              overflowY: "auto",
+            }}
+          >
+            <div className="sticky top-0 bg-white p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">
+                  {editingCategoryItem
+                    ? "Modifier l'élément"
+                    : "Nouvel élément"}
+                </h3>
+                <button
+                  onClick={() => setIsCategoryItemModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <IonIcon icon={closeOutline} className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <form onSubmit={handleCategoryItemSubmit}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom
+                    </label>
+                    <input
+                      type="text"
+                      value={categoryItemFormData.name}
+                      onChange={(e) =>
+                        setCategoryItemFormData({
+                          ...categoryItemFormData,
+                          name: e.target.value,
+                        })
+                      }
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Catégorie
+                    </label>
+                    <select
+                      value={categoryItemFormData.category}
+                      onChange={(e) =>
+                        setCategoryItemFormData({
+                          ...categoryItemFormData,
+                          category: e.target.value,
+                        })
+                      }
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 transition-colors"
+                      required
+                    >
+                      <option value="">Sélectionner une catégorie</option>
+                      {categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={categoryItemFormData.description}
+                      onChange={(e) =>
+                        setCategoryItemFormData({
+                          ...categoryItemFormData,
+                          description: e.target.value,
+                        })
+                      }
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 transition-colors"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryItemModalOpen(false)}
+                    className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition-colors"
+                  >
+                    {editingCategoryItem ? "Modifier" : "Créer"}
                   </button>
                 </div>
               </form>
