@@ -5,10 +5,17 @@ const expenseController = require("../controllers/expenseController");
 // Expense Category routes
 router.get("/categories", expenseController.getAllExpenseCategories);
 router.post("/categories", expenseController.createExpenseCategory);
+router.put("/categories/:id", expenseController.updateExpenseCategory);
+router.delete("/categories/:id", expenseController.deleteExpenseCategory);
 
 // Expense Category Item routes
 router.get("/category-items", expenseController.getAllExpenseCategoryItems);
 router.post("/category-items", expenseController.createExpenseCategoryItem);
+router.put("/category-items/:id", expenseController.updateExpenseCategoryItem);
+router.delete(
+  "/category-items/:id",
+  expenseController.deleteExpenseCategoryItem
+);
 
 // Expense routes
 router.get("/", expenseController.getAllExpenses);

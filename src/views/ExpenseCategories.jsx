@@ -78,8 +78,33 @@ const ExpenseCategories = () => {
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    // TODO: Implement delete category functionality
-    console.log("Delete category", categoryId);
+    const confirmDelete = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible."
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/expenses/categories/${categoryId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete category");
+      }
+
+      // Refresh the categories list after successful deletion
+      fetchCategories();
+      alert("Catégorie supprimée avec succès");
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleAddCategoryItem = async () => {
@@ -107,7 +132,7 @@ const ExpenseCategories = () => {
 
     try {
       const url = editingCategory
-        ? `http://localhost:3000/api/expenses/categories/${editingCategory._id}`
+        ? `http://localhost:3000/api/expenses/categories/${editingCategory.id}`
         : "http://localhost:3000/api/expenses/categories";
 
       const method = editingCategory ? "PUT" : "POST";
@@ -150,7 +175,7 @@ const ExpenseCategories = () => {
   const filteredCategoryItems = categoryItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (!selectedCategory || item.category._id === selectedCategory)
+      (!selectedCategory || item.category.id === selectedCategory)
   );
 
   return (
@@ -231,7 +256,7 @@ const ExpenseCategories = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCategories.map((category) => (
-                  <tr key={category._id}>
+                  <tr key={category.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {category.name}
                     </td>
@@ -244,7 +269,7 @@ const ExpenseCategories = () => {
                         <IonIcon icon={createOutline} />
                       </button>
                       <button
-                        onClick={() => handleDeleteCategory(category._id)}
+                        onClick={() => handleDeleteCategory(category.id)}
                         className="text-rose-600 hover:text-rose-900"
                       >
                         <IonIcon icon={trashOutline} />
@@ -297,7 +322,7 @@ const ExpenseCategories = () => {
               >
                 <option value="">Toutes les catégories</option>
                 {categories.map((category) => (
-                  <option key={category._id} value={category._id}>
+                  <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
@@ -323,7 +348,7 @@ const ExpenseCategories = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCategoryItems.map((item) => (
-                  <tr key={item._id}>
+                  <tr key={item.id}>
                     <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {item.category?.name}
@@ -337,7 +362,7 @@ const ExpenseCategories = () => {
                         <IonIcon icon={createOutline} />
                       </button>
                       <button
-                        onClick={() => handleDeleteCategoryItem(item._id)}
+                        onClick={() => handleDeleteCategoryItem(item.id)}
                         className="text-rose-600 hover:text-rose-900"
                       >
                         <IonIcon icon={trashOutline} />

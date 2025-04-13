@@ -32,6 +32,51 @@ exports.createExpenseCategory = async (req, res) => {
   }
 };
 
+exports.updateExpenseCategory = async (req, res) => {
+  const { error } = validateExpenseCategory(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
+  try {
+    const category = await ExpenseCategory.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    Object.assign(category, req.body);
+    const updatedCategory = await category.save();
+    res.json(updatedCategory);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.deleteExpenseCategory = async (req, res) => {
+  try {
+    const category = await ExpenseCategory.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Check if there are any items using this category
+    const itemsCount = await ExpenseCategoryItem.countDocuments({
+      category: req.params.id,
+    });
+    if (itemsCount > 0) {
+      return res.status(400).json({
+        message:
+          "Cannot delete category because it has associated items. Please delete the items first.",
+      });
+    }
+
+    await category.deleteOne();
+    res.json({ message: "Category deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Expense Category Item Controllers
 exports.getAllExpenseCategoryItems = async (req, res) => {
   try {
@@ -60,6 +105,48 @@ exports.createExpenseCategoryItem = async (req, res) => {
     res.status(201).json(newItem);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+exports.updateExpenseCategoryItem = async (req, res) => {
+  const { error } = validateExpenseCategoryItem(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
+  try {
+    const item = await ExpenseCategoryItem.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Category item not found" });
+    }
+
+    if (req.body.category) {
+      const categoryExists = await ExpenseCategory.findById(req.body.category);
+      if (!categoryExists) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+    }
+
+    Object.assign(item, req.body);
+    const updatedItem = await item.save();
+    await updatedItem.populate("category");
+    res.json(updatedItem);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.deleteExpenseCategoryItem = async (req, res) => {
+  try {
+    const item = await ExpenseCategoryItem.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Category item not found" });
+    }
+
+    await item.deleteOne();
+    res.json({ message: "Category item deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
