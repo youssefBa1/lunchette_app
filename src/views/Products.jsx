@@ -35,7 +35,7 @@ const Products = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/products");
+      const response = await fetch("http://localhost:3000/api/products");
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -45,7 +45,7 @@ const Products = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/categories");
+      const response = await fetch("http://localhost:3000/api/categories");
       const data = await response.json();
       setCategories(data);
     } catch (error) {
@@ -84,8 +84,8 @@ const Products = () => {
 
     try {
       const url = editingProduct
-        ? `http://localhost:5000/api/products/${editingProduct._id}`
-        : "http://localhost:5000/api/products";
+        ? `http://localhost:3000/api/products/${editingProduct._id}`
+        : "http://localhost:3000/api/products";
 
       const method = editingProduct ? "PUT" : "POST";
 
@@ -152,7 +152,7 @@ const Products = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/products/${productId}`,
+        `http://localhost:3000/api/products/${productId}`,
         {
           method: "DELETE",
         }

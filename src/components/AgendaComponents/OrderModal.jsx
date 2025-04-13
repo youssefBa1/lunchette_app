@@ -176,14 +176,14 @@ const OrderModal = ({
                   <span className="font-medium mr-2">{item.quantity}x</span>
                   <span>{item.product_id.name}</span>
                 </div>
-                <span className="text-gray-500">{item.price}€</span>
+                <span className="text-gray-500">{item.price} DT</span>
               </div>
             ))
           ) : (
             <div className="text-gray-500 italic">Aucun article</div>
           )}
           <div className="mt-1 text-right font-semibold">
-            Total: {order.totalPrice}€
+            Total: {order.totalPrice} DT
           </div>
         </div>
         <div className="flex flex-col space-y-1">

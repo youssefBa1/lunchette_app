@@ -1,13 +1,6 @@
 import { IonIcon } from "@ionic/react";
 import { useNavigate } from "react-router-dom";
-import {
-  fastFoodOutline,
-  pizzaOutline,
-  restaurantOutline,
-  pricetagsOutline,
-  peopleOutline,
-  statsChartOutline,
-} from "ionicons/icons";
+import { fastFoodOutline, pizzaOutline, walletOutline } from "ionicons/icons";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -28,32 +21,11 @@ const Settings = () => {
       path: "/settings/categories",
     },
     {
-      title: "Menu",
-      description: "Configurer l'affichage du menu",
-      icon: restaurantOutline,
+      title: "Dépenses",
+      description: "Gérer les catégories de dépenses",
+      icon: walletOutline,
       color: "bg-rose-50 hover:bg-rose-100",
-      path: "/settings/menu",
-    },
-    {
-      title: "Prix",
-      description: "Gérer les prix et les promotions",
-      icon: pricetagsOutline,
-      color: "bg-rose-50 hover:bg-rose-100",
-      path: "/settings/prices",
-    },
-    {
-      title: "Équipe",
-      description: "Gérer les membres de l'équipe",
-      icon: peopleOutline,
-      color: "bg-rose-50 hover:bg-rose-100",
-      path: "/settings/team",
-    },
-    {
-      title: "Statistiques",
-      description: "Voir les statistiques de vente",
-      icon: statsChartOutline,
-      color: "bg-rose-50 hover:bg-rose-100",
-      path: "/settings/stats",
+      path: "/settings/expenses",
     },
   ];
 

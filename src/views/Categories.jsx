@@ -18,7 +18,7 @@ const Categories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/categories");
+      const response = await fetch("http://localhost:3000/api/categories");
       const data = await response.json();
       setCategories(data);
     } catch (error) {
@@ -30,8 +30,8 @@ const Categories = () => {
     e.preventDefault();
     try {
       const url = editingCategory
-        ? `http://localhost:5000/api/categories/${editingCategory._id}`
-        : "http://localhost:5000/api/categories";
+        ? `http://localhost:3000/api/categories/${editingCategory._id}`
+        : "http://localhost:3000/api/categories";
 
       const method = editingCategory ? "PUT" : "POST";
 
@@ -73,7 +73,7 @@ const Categories = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/categories/${categoryId}`,
+        `http://localhost:3000/api/categories/${categoryId}`,
         {
           method: "DELETE",
         }

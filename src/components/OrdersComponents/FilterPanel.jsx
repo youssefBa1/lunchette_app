@@ -135,7 +135,7 @@ const FilterPanel = ({
           </h3>
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="text-xs text-gray-500">Min €</label>
+              <label className="text-xs text-gray-500">Min DT</label>
               <input
                 type="number"
                 value={priceRange.min}
@@ -151,7 +151,7 @@ const FilterPanel = ({
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-gray-500">Max €</label>
+              <label className="text-xs text-gray-500">Max DT</label>
               <input
                 type="number"
                 value={priceRange.max}

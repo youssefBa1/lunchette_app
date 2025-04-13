@@ -5,6 +5,7 @@ import HomeView from "./views/Home";
 import Settings from "./views/Settings";
 import Categories from "./views/Categories";
 import Products from "./views/Products";
+import ExpenseCategories from "./views/ExpenseCategories";
 import NavBar from "./components/NavBar";
 
 function App() {
@@ -26,6 +27,10 @@ function App() {
               <Route
                 path="/settings/products"
                 element={<Products></Products>}
+              ></Route>
+              <Route
+                path="/settings/expenses"
+                element={<ExpenseCategories></ExpenseCategories>}
               ></Route>
             </Routes>
           </>

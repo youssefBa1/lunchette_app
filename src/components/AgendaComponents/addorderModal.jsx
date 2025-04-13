@@ -44,7 +44,7 @@ const AddOrderModal = ({
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/products");
+        const response = await fetch("http://localhost:3000/api/products");
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         setProducts(data);
@@ -288,7 +288,9 @@ const AddOrderModal = ({
                         className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
                       >
                         <span>{product.name}</span>
-                        <span className="text-gray-500">{product.price}€</span>
+                        <span className="text-gray-500">
+                          {product.price} DT
+                        </span>
                       </div>
                     ))}
                   </div>

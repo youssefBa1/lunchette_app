@@ -118,7 +118,7 @@ const OrdersTableView = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.map((order) => (
                 <tr
-                  key={order.id}
+                  key={order._id}
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleAddModal(order)}
                 >
@@ -140,8 +140,10 @@ const OrdersTableView = ({
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
                       {order.orderContent &&
-                        order.orderContent.map((item, index) => (
-                          <div key={index}>
+                        order.orderContent.map((item) => (
+                          <div
+                            key={`${order._id}-${item.product_id._id}-${item.quantity}`}
+                          >
                             {item.quantity}x{" "}
                             {item.product_id && item.product_id.name}
                           </div>
@@ -150,7 +152,7 @@ const OrdersTableView = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {order.totalPrice?.toFixed(2)}€
+                      {order.totalPrice} DT
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

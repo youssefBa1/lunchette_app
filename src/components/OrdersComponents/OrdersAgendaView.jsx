@@ -351,7 +351,7 @@ const OrdersAgendaView = () => {
                               ))}
                             </div>
                             <div className="mt-2 text-right font-medium text-gray-900">
-                              {order.totalPrice}€
+                              {order.totalPrice} DT
                             </div>
                           </div>
                         ))}
