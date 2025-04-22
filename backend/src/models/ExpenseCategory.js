@@ -6,15 +6,11 @@ const expenseCategorySchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
+      minlength: 2,
     },
     description: {
       type: String,
       trim: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
     },
   },
   {
@@ -33,4 +29,9 @@ expenseCategorySchema.virtual("categoryItems", {
 expenseCategorySchema.set("toJSON", { virtuals: true });
 expenseCategorySchema.set("toObject", { virtuals: true });
 
-module.exports = mongoose.model("ExpenseCategory", expenseCategorySchema);
+const ExpenseCategory = mongoose.model(
+  "ExpenseCategory",
+  expenseCategorySchema
+);
+
+module.exports = ExpenseCategory;

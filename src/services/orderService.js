@@ -8,7 +8,7 @@ export const orderService = {
   },
 
   async getOrdersByDate(date) {
-    const response = await fetch(`${API_URL}/orders/by-date?startDate=${date}`);
+    const response = await fetch(`${API_URL}/orders/by-date?date=${date}`);
     if (!response.ok) throw new Error("Failed to fetch orders by date");
     return response.json();
   },

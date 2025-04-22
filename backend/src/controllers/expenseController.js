@@ -192,20 +192,60 @@ exports.createExpense = async (req, res) => {
 exports.getExpensesByDateRange = async (req, res) => {
   const { startDate, endDate } = req.query;
 
+  // Validate that both dates are provided
+  if (!startDate || !endDate) {
+    return res.status(400).json({
+      message: "Both startDate and endDate query parameters are required",
+      providedParams: { startDate, endDate },
+    });
+  }
+
   try {
+    // Validate date formats and set time to start and end of day
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        message: "Invalid date format. Please use YYYY-MM-DD format",
+        providedParams: { startDate, endDate },
+      });
+    }
+
     const expenses = await Expense.find({
       date: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
+        $gte: start,
+        $lte: end,
       },
-    }).populate({
-      path: "categoryItem",
-      populate: { path: "category" },
-    });
+    })
+      .sort({ date: 1, time: 1 }) // Sort by date and time
+      .populate({
+        path: "categoryItem",
+        populate: { path: "category" },
+      });
 
-    res.json(expenses);
+    if (!expenses || expenses.length === 0) {
+      return res.json({
+        message: "No expenses found for the specified date range",
+        dateRange: { startDate: start, endDate: end },
+        expenses: [],
+      });
+    }
+
+    res.json({
+      dateRange: { startDate: start, endDate: end },
+      expenses: expenses,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in getExpensesByDateRange:", error);
+    res.status(500).json({
+      message: "Error fetching expenses",
+      error: error.message,
+      providedParams: { startDate, endDate },
+    });
   }
 };
 

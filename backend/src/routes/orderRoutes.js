@@ -5,8 +5,8 @@ const orderController = require("../controllers/orderController");
 // Get all orders
 router.get("/", orderController.getAllOrders);
 
-// Get orders by date range
-router.get("/by-date", orderController.getOrdersByDateRange);
+// Get orders by date
+router.get("/by-date", orderController.getOrdersByDate);
 
 // Create a new order
 router.post("/", orderController.createOrder);
@@ -14,14 +14,14 @@ router.post("/", orderController.createOrder);
 // Get a specific order
 router.get("/:id", orderController.getOrder);
 
-// Update an order
+// Update a specific order
 router.put("/:id", orderController.updateOrder);
 
-// Update order status only
-router.patch("/:id/status", orderController.updateOrderStatus);
-
-// Delete an order
+// Delete a specific order
 router.delete("/:id", orderController.deleteOrder);
+
+// Update order status
+router.patch("/:id/status", orderController.updateOrderStatus);
 
 // Bulk create orders
 router.post("/bulk", orderController.createManyOrders);

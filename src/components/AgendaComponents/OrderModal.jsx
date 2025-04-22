@@ -183,7 +183,17 @@ const OrderModal = ({
             <div className="text-gray-500 italic">Aucun article</div>
           )}
           <div className="mt-1 text-right font-semibold">
-            Total: {order.totalPrice} DT
+            {order.hasAdvancePayment ? (
+              <>
+                <div>Accompte: {order.advanceAmount} DT</div>
+                <div>Reste à payer: {order.remainingAmount} DT</div>
+              </>
+            ) : (
+              <>
+                <div>Accompte: aucune</div>
+                <div>Total: {order.totalPrice} DT</div>
+              </>
+            )}
           </div>
         </div>
         <div className="flex flex-col space-y-1">

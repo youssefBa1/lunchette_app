@@ -5,17 +5,14 @@ import {
   addCircleOutline,
 } from "ionicons/icons";
 
-const OrdersHeader = ({
+const ExpenseHeader = ({
   selectedDate,
   setSelectedDate,
-  orders,
-  handleAddModal,
+  handleAddExpense,
   dayNames,
   months,
 }) => {
   const currentDate = new Date(selectedDate);
-  const dayName = dayNames[currentDate.getDay()];
-  const dayNumber = currentDate.getDate();
   const month = months[currentDate.getMonth()];
   const year = currentDate.getFullYear();
 
@@ -65,14 +62,11 @@ const OrdersHeader = ({
         <div className="font-medium text-base md:text-xl">
           {month} {year}
         </div>
-        <div className="font-medium text-sm md:text-xl text-green-200">
-          Nbre de commande : {orders.length}
-        </div>
       </div>
 
       <div className="flex items-center justify-center w-full md:w-auto space-x-4">
         <IonIcon
-          onClick={handleAddModal}
+          onClick={handleAddExpense}
           className="!blur-none hover:rotate-45 rounded-full duration-300 opacity-100 cursor-pointer"
           icon={addCircleOutline}
           style={{ fontSize: "35px", color: "#fca5a5" }}
@@ -88,4 +82,4 @@ const OrdersHeader = ({
   );
 };
 
-export default OrdersHeader;
+export default ExpenseHeader;

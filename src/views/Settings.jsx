@@ -1,6 +1,11 @@
 import { IonIcon } from "@ionic/react";
 import { useNavigate } from "react-router-dom";
-import { fastFoodOutline, pizzaOutline, walletOutline } from "ionicons/icons";
+import {
+  fastFoodOutline,
+  pizzaOutline,
+  walletOutline,
+  peopleCircleOutline,
+} from "ionicons/icons";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -26,6 +31,13 @@ const Settings = () => {
       icon: walletOutline,
       color: "bg-rose-50 hover:bg-rose-100",
       path: "/settings/expenses",
+    },
+    {
+      title: "Employés",
+      description: "Gérer les employés et leurs salaires",
+      icon: peopleCircleOutline,
+      color: "bg-rose-50 hover:bg-rose-100",
+      path: "/settings/employees",
     },
   ];
 

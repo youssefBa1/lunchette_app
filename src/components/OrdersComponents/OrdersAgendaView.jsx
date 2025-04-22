@@ -69,15 +69,22 @@ const OrdersAgendaView = () => {
       const transformedOrder = {
         customerName: orderData.customerName,
         customerPhoneNumber: orderData.customerPhoneNumber,
-        pickupDate: orderData.orderDate,
+        pickupDate: new Date(orderData.orderDate).toISOString(),
         pickupTime: orderData.orderTime,
-        status: "notready",
+        status: orderData._id ? orderToEdit.status : "notready",
         orderContent: orderData.orderContent.map((item) => ({
           product_id: item.product_id,
           quantity: parseInt(item.quantity),
           price: item.price,
         })),
         totalPrice: orderData.totalPrice || 0,
+        hasAdvancePayment: orderData.hasAdvancePayment || false,
+        advanceAmount: orderData.hasAdvancePayment
+          ? parseFloat(orderData.advanceAmount) || 0
+          : 0,
+        remainingAmount: orderData.hasAdvancePayment
+          ? orderData.totalPrice - (parseFloat(orderData.advanceAmount) || 0)
+          : orderData.totalPrice,
         description: orderData.details || "",
       };
 

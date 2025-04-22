@@ -11,6 +11,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
+const employeeRoutes = require("./routes/employeeRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -52,6 +53,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/employees", employeeRoutes);
 
 // Root route
 app.get("/", (req, res) => {

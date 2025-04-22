@@ -6,7 +6,9 @@ import Settings from "./views/Settings";
 import Categories from "./views/Categories";
 import Products from "./views/Products";
 import ExpenseCategories from "./views/ExpenseCategories";
+import Expenses from "./views/Expenses";
 import NavBar from "./components/NavBar";
+import EmployeeSettings from "./views/EmployeeSettings";
 
 function App() {
   return (
@@ -32,6 +34,11 @@ function App() {
                 path="/settings/expenses"
                 element={<ExpenseCategories></ExpenseCategories>}
               ></Route>
+              <Route path="/expenses" element={<Expenses></Expenses>}></Route>
+              <Route
+                path="/settings/employees"
+                element={<EmployeeSettings />}
+              />
             </Routes>
           </>
         </Router>

@@ -8,19 +8,19 @@ const AddOrderModal = ({
   viewMode,
   orderToEdit,
 }) => {
-  const modalRef = useRef(null);
-
-  // Initialize all state values with orderToEdit data if it exists
+  const [loading, setLoading] = useState(true);
+  const modalRef = useRef();
   const [customerName, setCustomerName] = useState("");
   const [customerPhoneNumber, setCustomerPhoneNumber] = useState("");
-  const [orderTime, setOrderTime] = useState("");
   const [orderDate, setOrderDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [articles, setArticles] = useState([{ product_id: "", quantity: "" }]);
+  const [orderTime, setOrderTime] = useState("");
   const [details, setDetails] = useState("");
+  const [hasAdvancePayment, setHasAdvancePayment] = useState(false);
+  const [advanceAmount, setAdvanceAmount] = useState("");
+  const [articles, setArticles] = useState([{ product_id: "", quantity: "" }]);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerms, setSearchTerms] = useState(Array(10).fill("")); // Array to store search terms for each article
   const [filteredProducts, setFilteredProducts] = useState(Array(10).fill([])); // Array to store filtered products for each article
 
@@ -48,6 +48,20 @@ const AddOrderModal = ({
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         setProducts(data);
+
+        // If we're editing an order, initialize the product names
+        if (orderToEdit?.orderContent) {
+          const newSearchTerms = [...searchTerms];
+          orderToEdit.orderContent.forEach((item, index) => {
+            const product = data.find(
+              (p) => p._id === (item.product_id._id || item.product_id)
+            );
+            if (product) {
+              newSearchTerms[index] = product.name;
+            }
+          });
+          setSearchTerms(newSearchTerms);
+        }
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -66,14 +80,18 @@ const AddOrderModal = ({
         orderToEdit.customerPhoneNumber || orderToEdit.customerNumber || ""
       );
       setOrderTime(orderToEdit.pickupTime || orderToEdit.orderTime || "");
+
+      // Format the date correctly for the date input
+      const date = orderToEdit.pickupDate || orderToEdit.orderDate;
       setOrderDate(
-        orderToEdit.pickupDate ||
-          orderToEdit.orderDate ||
-          new Date().toISOString().split("T")[0]
+        date
+          ? new Date(date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0]
       );
+
       setDetails(orderToEdit.description || orderToEdit.details || "");
 
-      // If there's orderContent, update articles array
+      // If there's orderContent, update articles array and searchTerms
       if (orderToEdit.orderContent && orderToEdit.orderContent.length > 0) {
         setArticles(
           orderToEdit.orderContent.map((item) => ({
@@ -81,6 +99,13 @@ const AddOrderModal = ({
             quantity: item.quantity,
           }))
         );
+
+        // Initialize searchTerms with product names
+        const newSearchTerms = [...searchTerms];
+        orderToEdit.orderContent.forEach((item, index) => {
+          newSearchTerms[index] = item.product_id.name || "";
+        });
+        setSearchTerms(newSearchTerms);
       }
     } else {
       console.log("Creating new order");
@@ -91,6 +116,7 @@ const AddOrderModal = ({
       setOrderDate(new Date().toISOString().split("T")[0]);
       setArticles([{ product_id: "", quantity: "" }]);
       setDetails("");
+      setSearchTerms(Array(10).fill(""));
     }
   }, [orderToEdit]);
 
@@ -120,6 +146,11 @@ const AddOrderModal = ({
       }
     });
 
+    const advancePaymentAmount = hasAdvancePayment
+      ? parseFloat(advanceAmount) || 0
+      : 0;
+    const remainingAmount = totalPrice - advancePaymentAmount;
+
     const orderData = {
       _id: orderToEdit?._id,
       customerName,
@@ -137,6 +168,9 @@ const AddOrderModal = ({
           };
         }),
       totalPrice,
+      hasAdvancePayment,
+      advanceAmount: advancePaymentAmount,
+      remainingAmount,
       details,
     };
 
@@ -331,6 +365,31 @@ const AddOrderModal = ({
             isMobile ? "w-[95%]" : "w-[80%]"
           } mb-5 group`}
         >
+          <div className="mb-4">
+            <div className="text-sm text-gray-700 mb-2">
+              {hasAdvancePayment ? (
+                <div>Accompte: {advanceAmount} DT</div>
+              ) : (
+                <div>Accompte: aucune</div>
+              )}
+              {hasAdvancePayment && advanceAmount && (
+                <div>
+                  Reste à payer:{" "}
+                  {parseFloat(
+                    articles.reduce((total, item) => {
+                      const product = products.find(
+                        (p) => p._id === item.product_id
+                      );
+                      return (
+                        total + (product ? product.price * item.quantity : 0)
+                      );
+                    }, 0) - parseFloat(advanceAmount)
+                  ).toFixed(2)}{" "}
+                  DT
+                </div>
+              )}
+            </div>
+          </div>
           <textarea
             name="details"
             id="details"
@@ -345,6 +404,69 @@ const AddOrderModal = ({
             details de commande
           </label>
         </div>
+        <div
+          className={`relative z-0 ${
+            isMobile ? "w-[95%]" : "w-[80%]"
+          } mb-5 group`}
+        >
+          <div className="mb-3">
+            <label className="text-sm text-gray-500">Advance Payment</label>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  className="w-4 h-4 text-rose-300 bg-gray-100 border-gray-300 focus:ring-rose-300"
+                  id="advanceYes"
+                  name="hasAdvance"
+                  checked={hasAdvancePayment}
+                  onChange={() => setHasAdvancePayment(true)}
+                />
+                <label
+                  className="ml-2 text-sm text-gray-700"
+                  htmlFor="advanceYes"
+                >
+                  Yes
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  className="w-4 h-4 text-rose-300 bg-gray-100 border-gray-300 focus:ring-rose-300"
+                  id="advanceNo"
+                  name="hasAdvance"
+                  checked={!hasAdvancePayment}
+                  onChange={() => setHasAdvancePayment(false)}
+                />
+                <label
+                  className="ml-2 text-sm text-gray-700"
+                  htmlFor="advanceNo"
+                >
+                  No
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {hasAdvancePayment && (
+            <div className="relative z-0 w-full mb-5 group">
+              <input
+                type="number"
+                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-rose-300 peer"
+                id="advanceAmount"
+                value={advanceAmount}
+                onChange={(e) => setAdvanceAmount(e.target.value)}
+                placeholder=" "
+              />
+              <label
+                htmlFor="advanceAmount"
+                className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-rose-300 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+              >
+                Advance Amount
+              </label>
+            </div>
+          )}
+        </div>
+
         <div
           className={`rounded-3xl bg-green-400 border-green-200 border-2 p-4 hover:bg-green-200 duration-300 cursor-pointer ${
             isMobile ? "w-[60%] text-center mb-6" : ""

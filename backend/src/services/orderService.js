@@ -46,11 +46,13 @@ class OrderService {
       endOfDay.setHours(23, 59, 59, 999);
 
       return await Order.find({
-        orderDate: {
+        pickupDate: {
           $gte: startOfDay,
           $lte: endOfDay,
         },
-      }).sort({ orderTime: 1 });
+      })
+        .populate("orderContent.product_id", "name price")
+        .sort({ pickupTime: 1 });
     } catch (error) {
       throw new Error(`Error fetching orders by date: ${error.message}`);
     }

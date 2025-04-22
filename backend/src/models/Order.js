@@ -48,6 +48,23 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    hasAdvancePayment: {
+      type: Boolean,
+      default: false,
+    },
+    advanceAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    remainingAmount: {
+      type: Number,
+      default: function () {
+        return (
+          this.totalPrice - (this.hasAdvancePayment ? this.advanceAmount : 0)
+        );
+      },
+    },
     description: {
       type: String,
       default: "",

@@ -7,6 +7,7 @@ import {
   calendarOutline,
   closeOutline,
   settingsOutline,
+  walletOutline,
 } from "ionicons/icons";
 
 const SideBar = ({ isCollapsed, setIsCollapsed }) => {
@@ -92,6 +93,17 @@ const SideBar = ({ isCollapsed, setIsCollapsed }) => {
         />
         <a href="" className="text-lg md:text-2xl font-md">
           Tpe
+        </a>
+      </div>
+
+      <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-500">
+        <IonIcon
+          icon={walletOutline}
+          style={{ fontSize: "24px" }}
+          className="md:text-3xl"
+        />
+        <a href="/expenses" className="text-lg md:text-2xl font-md">
+          Dépenses
         </a>
       </div>
 

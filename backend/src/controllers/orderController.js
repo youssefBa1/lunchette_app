@@ -49,10 +49,26 @@ class OrderController {
   async getOrdersByDate(req, res) {
     try {
       const { date } = req.query;
+
+      if (!date) {
+        return res.status(400).json({ message: "Date parameter is required" });
+      }
+
+      // Validate date format
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({
+          message: "Invalid date format. Please use YYYY-MM-DD format",
+          providedDate: date,
+        });
+      }
+
       const orders = await orderService.getOrdersByDate(date);
       res.json(orders);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res
+        .status(500)
+        .json({ message: `Error fetching orders by date: ${error.message}` });
     }
   }
 
@@ -71,31 +87,13 @@ class OrderController {
   // Get orders by date range
   async getOrdersByDateRange(req, res) {
     try {
-      const { startDate, endDate } = req.query;
+      const { startDate } = req.query;
 
       if (!startDate) {
         return res.status(400).json({ message: "Start date is required" });
       }
 
-      const query = {
-        pickupDate: {},
-      };
-
-      // Set start date
-      query.pickupDate.$gte = new Date(startDate);
-
-      // Set end date if provided, otherwise use start date
-      if (endDate) {
-        query.pickupDate.$lte = new Date(endDate);
-      } else {
-        query.pickupDate.$lte = new Date(startDate);
-        query.pickupDate.$lte.setHours(23, 59, 59, 999);
-      }
-
-      const orders = await Order.find(query)
-        .populate("orderContent.product_id", "name price")
-        .sort({ pickupTime: 1 });
-
+      const orders = await orderService.getOrdersByDate(startDate);
       res.json(orders);
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -172,6 +170,14 @@ class OrderController {
       order.orderContent = orderContent;
       order.totalPrice = req.body.totalPrice || calculatedTotalPrice;
       order.description = req.body.description;
+
+      // Update advance payment fields
+      order.hasAdvancePayment = req.body.hasAdvancePayment;
+      order.advanceAmount = req.body.hasAdvancePayment
+        ? req.body.advanceAmount || 0
+        : 0;
+      order.remainingAmount =
+        order.totalPrice - (order.hasAdvancePayment ? order.advanceAmount : 0);
 
       const updatedOrder = await order.save();
       await updatedOrder.populate("orderContent.product_id", "name price");

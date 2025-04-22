@@ -26,63 +26,68 @@ const orderItemSchema = Joi.object({
   }),
 });
 
-const orderSchema = Joi.object({
-  customerName: Joi.string().required().min(2).max(100).trim().messages({
-    "string.empty": "Customer name is required",
-    "string.min": "Customer name must be at least 2 characters long",
-    "string.max": "Customer name cannot exceed 100 characters",
+const orderValidationSchema = Joi.object({
+  customerName: Joi.string().required().messages({
+    "string.empty": "Le nom du client est requis",
+    "any.required": "Le nom du client est requis",
   }),
-
-  customerPhoneNumber: Joi.string()
-    .required()
-    .pattern(/^[0-9+\-\s()]+$/)
-    .min(8)
-    .max(20)
-    .messages({
-      "string.empty": "Phone number is required",
-      "string.pattern.base": "Please provide a valid phone number",
-      "string.min": "Phone number must be at least 8 characters long",
-      "string.max": "Phone number cannot exceed 20 characters",
-    }),
-
-  pickupDate: Joi.date().required().min("now").messages({
-    "date.base": "Please provide a valid date",
-    "date.min": "Pickup date cannot be in the past",
+  customerPhoneNumber: Joi.string().required().messages({
+    "string.empty": "Le numéro de téléphone est requis",
+    "any.required": "Le numéro de téléphone est requis",
   }),
-
-  pickupTime: Joi.string()
-    .required()
-    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .messages({
-      "string.empty": "Pickup time is required",
-      "string.pattern.base": "Please provide a valid time in HH:MM format",
-    }),
-
+  pickupDate: Joi.date().required().messages({
+    "date.base": "La date de retrait doit être une date valide",
+    "any.required": "La date de retrait est requise",
+  }),
+  pickupTime: Joi.string().required().messages({
+    "string.empty": "L'heure de retrait est requise",
+    "any.required": "L'heure de retrait est requise",
+  }),
   status: Joi.string()
-    .required()
-    .valid("payed", "ready", "notready")
+    .valid("notready", "ready", "payed")
     .default("notready")
     .messages({
-      "any.only": "Status must be either payed, ready, or notready",
+      "string.empty": "Le statut est requis",
+      "any.only": "Le statut doit être 'notready', 'ready' ou 'payed'",
     }),
-
-  orderContent: Joi.array().items(orderItemSchema).min(1).required().messages({
-    "array.min": "Order must contain at least one item",
-    "array.base": "Order content is required",
+  orderContent: Joi.array()
+    .items(
+      Joi.object({
+        product_id: Joi.string().required(),
+        quantity: Joi.number().required().min(1),
+        price: Joi.number(),
+      })
+    )
+    .required()
+    .messages({
+      "array.base": "Le contenu de la commande doit être un tableau",
+      "any.required": "Le contenu de la commande est requis",
+    }),
+  totalPrice: Joi.number().required().min(0).messages({
+    "number.base": "Le prix total doit être un nombre",
+    "number.min": "Le prix total ne peut pas être négatif",
+    "any.required": "Le prix total est requis",
   }),
-
-  totalPrice: Joi.number().min(0).required().messages({
-    "number.base": "Total price must be a number",
-    "number.min": "Total price cannot be negative",
+  description: Joi.string().allow("").optional(),
+  hasAdvancePayment: Joi.boolean().default(false),
+  advanceAmount: Joi.number().when("hasAdvancePayment", {
+    is: true,
+    then: Joi.number().required().min(0).messages({
+      "number.base": "Le montant de l'accompte doit être un nombre",
+      "number.min": "Le montant de l'accompte ne peut pas être négatif",
+      "any.required":
+        "Le montant de l'accompte est requis quand il y a un accompte",
+    }),
+    otherwise: Joi.number().default(0),
   }),
-
-  description: Joi.string().allow("").max(500).messages({
-    "string.max": "Description cannot exceed 500 characters",
+  remainingAmount: Joi.number().min(0).default(0).messages({
+    "number.base": "Le montant restant doit être un nombre",
+    "number.min": "Le montant restant ne peut pas être négatif",
   }),
 });
 
 const validateOrder = (data) => {
-  return orderSchema.validate(data, { abortEarly: false });
+  return orderValidationSchema.validate(data, { abortEarly: false });
 };
 
 module.exports = validateOrder;
