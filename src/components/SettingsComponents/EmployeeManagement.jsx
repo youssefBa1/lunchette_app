@@ -22,6 +22,9 @@ const EmployeeManagement = () => {
     salaryType: "monthly",
     employeeType: "regular",
     baseSalary: "",
+    shiftStart: "09:00",
+    shiftEnd: "17:00",
+    lateThreshold: 10,
   });
 
   // Fetch employees
@@ -86,6 +89,9 @@ const EmployeeManagement = () => {
         salaryType: employee.salaryType,
         employeeType: employee.employeeType,
         baseSalary: employee.baseSalary,
+        shiftStart: employee.shiftStart || "09:00",
+        shiftEnd: employee.shiftEnd || "17:00",
+        lateThreshold: employee.lateThreshold || 10,
       });
     } else {
       setSelectedEmployee(null);
@@ -95,6 +101,9 @@ const EmployeeManagement = () => {
         salaryType: "monthly",
         employeeType: "regular",
         baseSalary: "",
+        shiftStart: "09:00",
+        shiftEnd: "17:00",
+        lateThreshold: 10,
       });
     }
     setIsModalOpen(true);
@@ -109,6 +118,9 @@ const EmployeeManagement = () => {
       salaryType: "monthly",
       employeeType: "regular",
       baseSalary: "",
+      shiftStart: "09:00",
+      shiftEnd: "17:00",
+      lateThreshold: 10,
     });
   };
 
@@ -210,7 +222,7 @@ const EmployeeManagement = () => {
 
       {/* Add/Edit Employee Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-start justify-center z-50 pt-32">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">
@@ -299,6 +311,58 @@ const EmployeeManagement = () => {
                   min="0"
                   step="0.01"
                 />
+              </div>
+
+              <div className="border-t border-gray-200 mt-6 pt-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">
+                  Horaires de travail
+                </h4>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Heure de début
+                    </label>
+                    <input
+                      type="time"
+                      name="shiftStart"
+                      value={formData.shiftStart}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Heure de fin
+                    </label>
+                    <input
+                      type="time"
+                      name="shiftEnd"
+                      value={formData.shiftEnd}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Seuil de retard (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    name="lateThreshold"
+                    value={formData.lateThreshold}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                    min="0"
+                    max="60"
+                  />
+                  <p className="mt-1 text-sm text-gray-500">
+                    Minutes de tolérance après l'heure de début avant de marquer
+                    comme retard
+                  </p>
+                </div>
               </div>
 
               <div className="flex justify-end space-x-3 mt-6">

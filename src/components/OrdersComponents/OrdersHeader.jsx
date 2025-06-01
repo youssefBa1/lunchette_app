@@ -72,7 +72,7 @@ const OrdersHeader = ({
 
       <div className="flex items-center justify-center w-full md:w-auto space-x-4">
         <IonIcon
-          onClick={handleAddModal}
+          onClick={() => handleAddModal(null)}
           className="!blur-none hover:rotate-45 rounded-full duration-300 opacity-100 cursor-pointer"
           icon={addCircleOutline}
           style={{ fontSize: "35px", color: "#fca5a5" }}

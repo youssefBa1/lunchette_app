@@ -142,10 +142,12 @@ const OrdersTableView = ({
                       {order.orderContent &&
                         order.orderContent.map((item) => (
                           <div
-                            key={`${order._id}-${item.product_id._id}-${item.quantity}`}
+                            key={`${order._id}-${
+                              item.product_id?._id || "unknown"
+                            }-${item.quantity}`}
                           >
                             {item.quantity}x{" "}
-                            {item.product_id && item.product_id.name}
+                            {item.product_id?.name || "Produit inconnu"}
                           </div>
                         ))}
                     </div>

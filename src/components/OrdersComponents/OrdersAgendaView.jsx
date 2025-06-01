@@ -1,6 +1,6 @@
 import { IonIcon } from "@ionic/react";
 import { useState, useEffect } from "react";
-import AddOrderModal from "../AgendaComponents/addorderModal";
+import AddOrderModal from "../../components/AgendaComponents/addorderModal";
 import { calendarOutline, listOutline, filterOutline } from "ionicons/icons";
 import Order from "../Orders";
 import OrderModal from "../AgendaComponents/OrderModal";
@@ -65,12 +65,28 @@ const OrdersAgendaView = () => {
 
   const addOrder = async (orderData) => {
     try {
+      // Format the time to ensure it's in HH:mm format
+      const formatTime = (time) => {
+        if (!time) return "";
+        // If time is already in HH:mm format, return it
+        if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
+          return time;
+        }
+        // If time is in HH:mm AM/PM format, convert it
+        const [timePart, period] = time.split(" ");
+        let [hours, minutes] = timePart.split(":");
+        hours = parseInt(hours);
+        if (period === "PM" && hours !== 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
+        return `${hours.toString().padStart(2, "0")}:${minutes}`;
+      };
+
       // Transform frontend data to match backend schema
       const transformedOrder = {
         customerName: orderData.customerName,
         customerPhoneNumber: orderData.customerPhoneNumber,
         pickupDate: new Date(orderData.orderDate).toISOString(),
-        pickupTime: orderData.orderTime,
+        pickupTime: formatTime(orderData.orderTime),
         status: orderData._id ? orderToEdit.status : "notready",
         orderContent: orderData.orderContent.map((item) => ({
           product_id: item.product_id,
@@ -132,11 +148,9 @@ const OrdersAgendaView = () => {
   };
 
   const handleAddModal = (order = null) => {
-    // If we're closing the modal, make sure to reset orderToEdit
     if (isAddModalShown) {
       setOrderToEdit(null);
     } else {
-      // If we're opening the modal, set orderToEdit to the passed order (or null)
       setOrderToEdit(order);
     }
     setIsAddModalShown(!isAddModalShown);
@@ -353,7 +367,8 @@ const OrdersAgendaView = () => {
                             <div className="mt-2 text-sm">
                               {order.orderContent?.map((item, index) => (
                                 <div key={index} className="text-gray-700">
-                                  {item.quantity}x {item.product_id.name}
+                                  {item.quantity}x{" "}
+                                  {item.product_id?.name || "Produit inconnu"}
                                 </div>
                               ))}
                             </div>

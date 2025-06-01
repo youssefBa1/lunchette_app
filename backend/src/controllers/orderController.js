@@ -13,7 +13,7 @@ class OrderController {
     }
   }
 
-  async getOrders(req, res) {
+  async getAllOrders(req, res) {
     try {
       const orders = await orderService.getOrders();
       res.json(orders);
@@ -22,9 +22,71 @@ class OrderController {
     }
   }
 
-  async updateOrder(req, res) {
+  async getOrder(req, res) {
     try {
-      const order = await orderService.updateOrder(req.params.id, req.body);
+      const order = await Order.findById(req.params.id).populate(
+        "orderContent.product_id",
+        "name price"
+      );
+      if (order) {
+        res.json(order);
+      } else {
+        res.status(404).json({ message: "Order not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async updateOrder(req, res) {
+    // Validate request body
+    const { error } = validateOrder(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: "Validation error",
+        errors: error.details.map((detail) => detail.message),
+      });
+    }
+
+    try {
+      // Verify all products exist
+      const productIds = req.body.orderContent.map((item) => item.product_id);
+      const products = await Product.find({ _id: { $in: productIds } });
+
+      if (products.length !== productIds.length) {
+        return res
+          .status(400)
+          .json({ message: "One or more products not found" });
+      }
+
+      // Create product price lookup
+      const productPrices = {};
+      products.forEach((product) => {
+        productPrices[product._id.toString()] = product.price;
+      });
+
+      // Calculate total price and set individual item prices
+      let calculatedTotalPrice = 0;
+      const orderContent = req.body.orderContent.map((item) => {
+        const itemPrice = productPrices[item.product_id] * item.quantity;
+        calculatedTotalPrice += itemPrice;
+        return {
+          ...item,
+          price: itemPrice,
+        };
+      });
+
+      // Prepare update data
+      const updateData = {
+        ...req.body,
+        orderContent,
+        totalPrice: req.body.totalPrice || calculatedTotalPrice,
+        remainingAmount:
+          (req.body.totalPrice || calculatedTotalPrice) -
+          (req.body.hasAdvancePayment ? req.body.advanceAmount || 0 : 0),
+      };
+
+      const order = await orderService.updateOrder(req.params.id, updateData);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -72,136 +134,6 @@ class OrderController {
     }
   }
 
-  // Get all orders
-  async getAllOrders(req, res) {
-    try {
-      const orders = await Order.find()
-        .populate("orderContent.product_id", "name price")
-        .sort({ pickupDate: 1, pickupTime: 1 });
-      res.json(orders);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
-  // Get orders by date range
-  async getOrdersByDateRange(req, res) {
-    try {
-      const { startDate } = req.query;
-
-      if (!startDate) {
-        return res.status(400).json({ message: "Start date is required" });
-      }
-
-      const orders = await orderService.getOrdersByDate(startDate);
-      res.json(orders);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  }
-
-  // Get a single order
-  async getOrder(req, res) {
-    try {
-      const order = await Order.findById(req.params.id).populate(
-        "orderContent.product_id",
-        "name price"
-      );
-      if (order) {
-        res.json(order);
-      } else {
-        res.status(404).json({ message: "Order not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
-  // Update an order
-  async updateOrder(req, res) {
-    // Validate request body
-    const { error } = validateOrder(req.body);
-    if (error) {
-      return res.status(400).json({
-        message: "Validation error",
-        errors: error.details.map((detail) => detail.message),
-      });
-    }
-
-    try {
-      const order = await Order.findById(req.params.id);
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-
-      // Verify all products exist
-      const productIds = req.body.orderContent.map((item) => item.product_id);
-      const products = await Product.find({ _id: { $in: productIds } });
-
-      if (products.length !== productIds.length) {
-        return res
-          .status(400)
-          .json({ message: "One or more products not found" });
-      }
-
-      // Create product price lookup
-      const productPrices = {};
-      products.forEach((product) => {
-        productPrices[product._id.toString()] = product.price;
-      });
-
-      // Calculate total price and set individual item prices
-      let calculatedTotalPrice = 0;
-      const orderContent = req.body.orderContent.map((item) => {
-        const itemPrice = productPrices[item.product_id] * item.quantity;
-        calculatedTotalPrice += itemPrice;
-        return {
-          ...item,
-          price: itemPrice,
-        };
-      });
-
-      // Update the order
-      order.customerName = req.body.customerName;
-      order.customerPhoneNumber = req.body.customerPhoneNumber;
-      order.pickupDate = req.body.pickupDate;
-      order.pickupTime = req.body.pickupTime;
-      order.status = req.body.status;
-      order.orderContent = orderContent;
-      order.totalPrice = req.body.totalPrice || calculatedTotalPrice;
-      order.description = req.body.description;
-
-      // Update advance payment fields
-      order.hasAdvancePayment = req.body.hasAdvancePayment;
-      order.advanceAmount = req.body.hasAdvancePayment
-        ? req.body.advanceAmount || 0
-        : 0;
-      order.remainingAmount =
-        order.totalPrice - (order.hasAdvancePayment ? order.advanceAmount : 0);
-
-      const updatedOrder = await order.save();
-      await updatedOrder.populate("orderContent.product_id", "name price");
-      res.json(updatedOrder);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  }
-
-  // Delete an order
-  async deleteOrder(req, res) {
-    try {
-      const order = await Order.findById(req.params.id);
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      await order.deleteOne();
-      res.json({ message: "Order deleted" });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
-  // Add many orders at once
   async createManyOrders(req, res) {
     try {
       const orders = req.body;
@@ -255,17 +187,25 @@ class OrderController {
           ...order,
           orderContent,
           totalPrice: order.totalPrice || totalPrice,
+          remainingAmount:
+            (order.totalPrice || totalPrice) -
+            (order.hasAdvancePayment ? order.advanceAmount || 0 : 0),
         };
       });
 
       const createdOrders = await Order.insertMany(ordersWithPrices);
+
+      // Update daily income for each order
+      for (const order of createdOrders) {
+        await orderService.updateDailyIncome(order.orderContent);
+      }
+
       res.status(201).json(createdOrders);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
 
-  // Update order status only
   async updateOrderStatus(req, res) {
     try {
       const { status } = req.body;

@@ -39,6 +39,28 @@ const employeeValidationSchema = Joi.object({
   }),
 
   isActive: Joi.boolean().default(true),
+
+  shiftStart: Joi.string()
+    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .default("09:00")
+    .messages({
+      "string.pattern.base":
+        "L'heure de début doit être au format HH:MM (ex: 09:00)",
+    }),
+
+  shiftEnd: Joi.string()
+    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .default("17:00")
+    .messages({
+      "string.pattern.base":
+        "L'heure de fin doit être au format HH:MM (ex: 17:00)",
+    }),
+
+  lateThreshold: Joi.number().min(0).max(60).default(10).messages({
+    "number.base": "Le seuil de retard doit être un nombre",
+    "number.min": "Le seuil de retard ne peut pas être négatif",
+    "number.max": "Le seuil de retard ne peut pas dépasser 60 minutes",
+  }),
 });
 
 module.exports = employeeValidationSchema;

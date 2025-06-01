@@ -5,6 +5,8 @@ import {
   pizzaOutline,
   walletOutline,
   peopleCircleOutline,
+  businessOutline,
+  personCircleOutline,
 } from "ionicons/icons";
 
 const Settings = () => {
@@ -38,6 +40,20 @@ const Settings = () => {
       icon: peopleCircleOutline,
       color: "bg-rose-50 hover:bg-rose-100",
       path: "/settings/employees",
+    },
+    {
+      title: "Fournisseurs",
+      description: "Gérer les fournisseurs et leurs informations",
+      icon: businessOutline,
+      color: "bg-rose-50 hover:bg-rose-100",
+      path: "/settings/suppliers",
+    },
+    {
+      title: "Comptes",
+      description: "Gérer les comptes utilisateurs et leurs rôles",
+      icon: personCircleOutline,
+      color: "bg-rose-50 hover:bg-rose-100",
+      path: "/settings/accounts",
     },
   ];
 

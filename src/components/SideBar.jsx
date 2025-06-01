@@ -8,10 +8,13 @@ import {
   closeOutline,
   settingsOutline,
   walletOutline,
+  cashOutline,
 } from "ionicons/icons";
+import authService from "../services/authService";
 
 const SideBar = ({ isCollapsed, setIsCollapsed }) => {
   const sidebarRef = useRef(null);
+  const isAdmin = authService.isAdmin();
 
   // Handle clicks outside sidebar to close it on mobile
   useEffect(() => {
@@ -52,27 +55,31 @@ const SideBar = ({ isCollapsed, setIsCollapsed }) => {
         </button>
       </div>
 
-      <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-100">
-        <IonIcon
-          icon={homeOutline}
-          style={{ fontSize: "24px" }}
-          className="md:text-3xl"
-        />
-        <a href="/" className="text-lg md:text-2xl font-md">
-          Accueil
-        </a>
-      </div>
+      {isAdmin && (
+        <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-100">
+          <IonIcon
+            icon={homeOutline}
+            style={{ fontSize: "24px" }}
+            className="md:text-3xl"
+          />
+          <a href="/" className="text-lg md:text-2xl font-md">
+            Accueil
+          </a>
+        </div>
+      )}
 
-      <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-500">
-        <IonIcon
-          icon={peopleCircleOutline}
-          style={{ fontSize: "24px" }}
-          className="md:text-3xl"
-        />
-        <a href="/team" className="text-lg md:text-2xl font-md">
-          Equipe
-        </a>
-      </div>
+      {isAdmin && (
+        <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-500">
+          <IonIcon
+            icon={peopleCircleOutline}
+            style={{ fontSize: "24px" }}
+            className="md:text-3xl"
+          />
+          <a href="/team" className="text-lg md:text-2xl font-md">
+            Equipe
+          </a>
+        </div>
+      )}
 
       <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-500">
         <IonIcon
@@ -91,8 +98,8 @@ const SideBar = ({ isCollapsed, setIsCollapsed }) => {
           style={{ fontSize: "24px" }}
           className="md:text-3xl"
         />
-        <a href="" className="text-lg md:text-2xl font-md">
-          Tpe
+        <a href="/regular-sales" className="text-lg md:text-2xl font-md">
+          Vente Vitrine
         </a>
       </div>
 
@@ -109,14 +116,27 @@ const SideBar = ({ isCollapsed, setIsCollapsed }) => {
 
       <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-500">
         <IonIcon
-          icon={settingsOutline}
+          icon={cashOutline}
           style={{ fontSize: "24px" }}
           className="md:text-3xl"
         />
-        <a href="/settings" className="text-lg md:text-2xl font-md">
-          Paramètres
+        <a href="/supplier-expenses" className="text-lg md:text-2xl font-md">
+          Dépenses Fournisseurs
         </a>
       </div>
+
+      {isAdmin && (
+        <div className="rounded-lg p-3 md:p-4 flex space-x-4 md:space-x-6 hover:bg-[#ffe9eb] duration-500">
+          <IonIcon
+            icon={settingsOutline}
+            style={{ fontSize: "24px" }}
+            className="md:text-3xl"
+          />
+          <a href="/settings" className="text-lg md:text-2xl font-md">
+            Paramètres
+          </a>
+        </div>
+      )}
     </div>
   );
 };

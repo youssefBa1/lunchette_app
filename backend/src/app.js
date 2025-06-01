@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const path = require("path");
 const session = require("express-session");
 const dotenv = require("dotenv");
+const userRoutes = require("../routes/userRoutes");
 
 // Routes
 const orderRoutes = require("./routes/orderRoutes");
@@ -12,14 +13,24 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
+const presenceRoutes = require("./routes/presenceRoutes");
+const purchaseRoutes = require("./routes/purchaseRoutes");
+const supplierRoutes = require("./routes/supplier");
+const supplierExpenseRoutes = require("./routes/supplierExpense");
+const regularSalesRoutes = require("./routes/regularSales");
+const statsRoutes = require("./routes/stats");
 
 // Load environment variables
 dotenv.config();
 
 // MongoDB Connection
-mongoose.connect(
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/lunchette"
-);
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/lunchette", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -54,6 +65,13 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/presence", presenceRoutes);
+app.use("/api/purchases", purchaseRoutes);
+app.use("/api/suppliers", supplierRoutes);
+app.use("/api/supplier-expenses", supplierExpenseRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/regular-sales", regularSalesRoutes);
+app.use("/api/stats", statsRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -62,12 +80,8 @@ app.get("/", (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  const { statusCode = 500 } = err;
-  if (!err.message) err.message = "Oh No, Something Went Wrong!";
-  res.status(statusCode).json({
-    message: err.message,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
-  });
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
 });
 
 // Start server

@@ -1,13 +1,26 @@
 import { IonIcon } from "@ionic/react";
 import { useState } from "react";
-import { menuOutline, personOutline, helpCircleOutline } from "ionicons/icons";
+import {
+  menuOutline,
+  personOutline,
+  helpCircleOutline,
+  logOutOutline,
+} from "ionicons/icons";
 import SideBar from "./SideBar";
+import { useNavigate } from "react-router-dom";
+import authService from "../services/authService";
 
 const NavBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate("/login");
   };
 
   return (
@@ -21,9 +34,7 @@ const NavBar = () => {
             className="cursor-pointer md:text-4xl"
             data-menu-toggle="true"
           />
-          <p className="text-xl md:text-3xl font-medium font-mono ml-2 md:ml-6 hidden sm:block">
-            Home
-          </p>
+          <p className="text-xl md:text-3xl font-medium font-mono ml-2 md:ml-6 hidden sm:block"></p>
         </div>
 
         <div className="flex justify-center items-center text-2xl md:text-3xl font-bold text-rose-300">
@@ -40,6 +51,12 @@ const NavBar = () => {
             icon={helpCircleOutline}
             style={{ fontSize: "24px", color: "black" }}
             className="md:p-5 md:text-3xl"
+          />
+          <IonIcon
+            icon={logOutOutline}
+            style={{ fontSize: "24px", color: "black" }}
+            className="md:text-3xl cursor-pointer hover:text-red-500"
+            onClick={handleLogout}
           />
         </div>
       </header>
